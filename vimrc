@@ -6,7 +6,7 @@ set nomodeline
 " Stop word wrapping
 set nowrap
   " Except... on Markdown. That's good stuff.
-  autocmd FileType markdown setlocal wrap
+autocmd FileType markdown setlocal wrap
 " Adjust system undo levels
 set undolevels=100
 " search case insensitive unless capital letters used
@@ -30,6 +30,8 @@ set hlsearch
 set scrolloff=1
 set sidescrolloff=5
 let mapleader="\<SPACE>"
+" paste toggle with space g
+nmap <Leader>g :set nopaste 
 " switch splits left and right
 nmap <Leader><Left> <c-w>w
 nmap <Leader><Right> <c-w>W
@@ -38,17 +40,23 @@ nmap <Leader>j <C-d>
 nmap <Leader>k <C-u> 
 " tab between windows shift tab to go back
 nnoremap <Tab> :bnext!<CR>
-nnoremap <S-Tab> :bprev!<CR><Paste>
+nnoremap <S-Tab> :bprev!<CR>
 " make ; function as : super lazy :)
 nnoremap ; :
 
 call plug#begin('~/.local/share/nvim/plugged')
-  Plug 'pangloss/vim-javascript'
-  Plug 'mxw/vim-jsx'
+  Plug 'lervag/vimtex'
+  Plug 'mhinz/neovim-remote'
+  Plug 'Shougo/deoplete.nvim', { 'do': ':UpdateRemotePlugins' }
   Plug 'Shougo/unite/vim'
+  Plug 'pangloss/vim-javascript'
+  Plug 'mattn/emmet-vim'
+  Plug 'mxw/vim-jsx'
   Plug 'agude/vim-eldar'
   Plug 'tomasr/molokai'
   Plug 'dracula/vim'
+  Plug 'tpope/vim-surround'
+  Plug 'tpope/vim-commentary'
   Plug 'Yggdroot/indentLine'
   Plug 'airblade/vim-gitgutter'
   Plug 'vim-airline/vim-airline'
@@ -56,10 +64,17 @@ call plug#begin('~/.local/share/nvim/plugged')
   Plug 'ctrlpvim/ctrlp.vim', { 'on': 'CtrlP' }
   Plug 'mhinz/vim-grepper'
   Plug 'Shougo/vimfiler.vim', { 'on': 'VimFiler' }
-  Plug 'Shougo/deoplete.nvim', { 'do': ':UpdateRemotePlugins' }
   Plug 'w0rp/ale'
   Plug 'justinmk/vim-sneak'
 call plug#end()
+" trigger emmet with ,, 
+let g:user_emmet_leader_key=','
+" (E)mmet makes (E)xplore ambiguous so we need to explicitly redefine it below
+command! E Explore
+" use with vimtex apparently
+let g:vimtex_compiler_progname = 'nvr'
+
+let g:deoplete#enable_at_startup = 1
 " this enables the pangloss vim js package syntax highlighting
 let g:javascript_plugin_jsdoc = 1
 " ale standard style for JS
@@ -107,8 +122,6 @@ colorscheme dracula
 
 augroup dracula_customization
   au!
-      " autocmds...
-    au FocusGained * :set relativenumber
 
     " show regular line numbers in inactive buffers
     au FocusLost * :set number
@@ -141,21 +154,6 @@ set directory=~/.vim/swaps
 if exists("&undodir")
   set undodir=~/.vim/undo
 endif
-
-" this might finally help me with auto set nopaste
-function! WrapForTmux(s)
-  if !exists('$TMUX')
-    return a:s
-  endif
-
-  let tmux_start = "\<Esc>Ptmux;"
-  let tmux_end = "\<Esc>\\"
-
-  return tmux_start . substitute(a:s, "\<Esc>", "\<Esc>\<Esc>", 'g') . tmux_end
-endfunction
-
-let &t_SI .= WrapForTmux("\<Esc>[?2004h")
-let &t_EI .= WrapForTmux("\<Esc>[?2004l")
 
 function! XTermPasteBegin()
   set pastetoggle=<Esc>[201~

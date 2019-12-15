@@ -1,21 +1,87 @@
-# Auto start tmux
-if [ "$TMUX" = "" ]; then tmux; fi
+# turn off beep
+unsetopt BEEP
+# init a new node project quickly
+function node-project {
+  git init
+  npx license $(npm get init.license) -o "$(npm get init.author.name)" > LICENSE
+  npx gitignore node
+  npx covgen "$(npm get init.author.email)"
+  npm init -y
+  git add -A
+  git commit -m "Initial commit"
+}
+
+# deletes all screenshots on your desktop
+alias deleteScreenshots="find ~/Desktop -maxdepth 1 -name '*Screen*' -delete"
+
+function precmd() {
+  if (($COLUMNS < 100))
+    then 
+      POWERLEVEL9K_RIGHT_PROMPT_ELEMENTS=(vi_mode)
+      SPACESHIP_RPROMPT_ORDER=(
+        time
+        vi_mode       # Vi-mode indicator
+      )
+
+  else 
+    POWERLEVEL9K_RIGHT_PROMPT_ELEMENTS=(status vi_mode history battery ip)
+    SPACESHIP_RPROMPT_ORDER=(
+      time
+      vi_mode       # Vi-mode indicator
+    )
+  fi
+}
+
+# do NOT show right prompt after executing command
+setopt TRANSIENT_RPROMPT
 
 # Auto CD
 setopt auto_cd
 
 alias vim="nvim"
-
 # If you come from bash you might have to change your $PATH.
-# export PATH=$HOME/bin:/usr/local/bin:$PATH
+export PATH=~/.okta/bin:$HOME/bin:/usr/local/bin:$PATH
+
+#OktaAWSCLI
+if [[ -f "$HOME/.okta/bash_functions" ]]; then
+    . "$HOME/.okta/bash_functions"
+fi
+
+if [[ -d "$HOME/.okta/bin" && ":$PATH:" != *":$HOME/.okta/bin:"* ]]; then
+    PATH="$HOME/.okta/bin:$PATH"
+fi
+
+# custom scripts added here below:
+# export PATH=$PATH:~/bin
 
 # Path to your oh-my-zsh installation.
 export ZSH=/Users/moroark/.oh-my-zsh
 
+# POWERLINE settings
+POWERLEVEL9K_MODE='nerdfont-complete'
+POWERLEVEL9K_PROMPT_ON_NEWLINE=true
+POWERLEVEL9K_PROMPT_ON_NEWLINE=true
+POWERLEVEL9K_RPROMPT_ON_NEWLINE=true
+POWERLEVEL9K_LEFT_PROMPT_ELEMENTS=(dir vcs)
+# SPACESHIP settings
+#SPACESHIP_PROMPT_ADD_NEWLINE=true
+SPACESHIP_PROMPT_SEPARATE_LINE=true
+SPACESHIP_NODE_DEFAULT_VERSION=8.11.4
+SPACESHIP_PACKAGE_SHOW=false
+SPACESHIP_GIT_STATUS_COLOR=yellow
+SPACESHIP_RPROMPT_ORDER=(
+  time
+  vi_mode       # Vi-mode indicator
+)
+
+# this makes vi mode work correctly for spaceship prompt
+export RPS1="%{$reset_color%}"
+
+# POWERLEVEL9K_RIGHT_PROMPT_ELEMENTS=(status vi_mode history battery ip)	
 # Set name of the theme to load. Optionally, if you set this to "random"
 # it'll load a random theme each time that oh-my-zsh is loaded.
 # See https://github.com/robbyrussell/oh-my-zsh/wiki/Themes
-ZSH_THEME="af-magic"
+ZSH_THEME="powershell9k"
 
 # Set list of themes to load
 # Setting this variable when ZSH_THEME=random
@@ -68,6 +134,8 @@ ZSH_THEME="af-magic"
 # Add wisely, as too many plugins slow down shell startup.
 plugins=(
   git
+  dotenv
+  battery
 )
 
 source $ZSH/oh-my-zsh.sh
@@ -77,6 +145,8 @@ source $ZSH/oh-my-zsh.sh
 # activate vim mode for the command line
 set -o vi
 bindkey -v
+# acivate ctrl-R for searching backwards through command history
+bindkey '^R' history-incremental-search-backward
 
 # export MANPATH="/usr/local/man:$MANPATH"
 
